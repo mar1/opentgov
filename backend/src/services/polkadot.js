@@ -118,7 +118,5 @@ async function runPeriodically() {
 }
 
 module.exports = {
-    createPolkadotAccount,
-    checkPolkadotBalance,
     runPeriodically
 };
