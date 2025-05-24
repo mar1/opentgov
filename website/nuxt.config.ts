@@ -46,6 +46,13 @@ export default defineNuxtConfig({
       }
     }]
   ],
+  image: {
+    dir: 'public',
+    domains: ['opentgov.com'],
+    alias: {
+      '/': '/'
+    }
+  },
   build: {
     transpile: ['@polkadot/api', '@polkadot/util-crypto', '@polkadot/extension-dapp', 'rxjs'],
   },
