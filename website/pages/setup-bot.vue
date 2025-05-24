@@ -119,7 +119,7 @@
               </li>
             </ol>
             <div class="mt-6 p-4 bg-gray-700/50 rounded-lg">
-              <NuxtImg src="/img/proxy_creation.png" class="rounded-lg shadow-lg w-full" />
+              <img src="/img/proxy_creation.png" class="rounded-lg shadow-lg w-full" />
               <p class="text-sm text-gray-400 mt-2 text-center">Screenshot showing the proxy creation process in Polkadot.js Apps</p>
             </div>
           </section>

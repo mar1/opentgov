@@ -47,10 +47,9 @@ export default defineNuxtConfig({
     }]
   ],
   image: {
-    dir: 'public',
-    domains: ['opentgov.com'],
-    alias: {
-      '/': '/'
+    provider: 'ipx',
+    ipx: {
+      maxAge: 60 * 60 * 24 * 30 // 30 days
     }
   },
   build: {

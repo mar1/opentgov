@@ -15,7 +15,7 @@
   >
     <!-- Logo section -->
     <div class="mb-4">
-      <NuxtImg alt="OpenTGOV logo" src="/img/LOGO.PNG" class="w-24 md:w-40"></NuxtImg>
+      <img alt="OpenTGOV logo" src="/img/LOGO.PNG" class="w-24 md:w-40">
     </div>
     <!-- Brand name with styled underline -->
     <p class="text-3xl md:text-4xl font-extrabold yellow my-4">
