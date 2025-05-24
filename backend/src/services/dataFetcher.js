@@ -77,6 +77,15 @@ async function fetchData() {
                     }
                 }
 
+                // Get the latest title from the API
+                const latestPost = await axios.get('https://api.polkassembly.io/api/v1/posts/on-chain-post', {
+                    headers: { 'x-network': 'polkadot' },
+                    params: {
+                        proposalType: 'referendums_v2',
+                        postId: post.post_id
+                    }
+                });
+
                 // Return combined proposal data
                 return {
                     post_id: post.post_id,
@@ -87,7 +96,7 @@ async function fetchData() {
                     proposer: post.proposer,
                     requestedAmount: post.requestedAmount,
                     status: post.status,
-                    title: post.title,
+                    title: latestPost.data.title || post.title || `Referendum #${post.post_id}`,
                     track_no: post.track_no,
                     ayes: tally ? tally.ayes : null,
                     nays: tally ? tally.nays : null,

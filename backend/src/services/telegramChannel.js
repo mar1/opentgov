@@ -203,6 +203,18 @@ async function createTopic(post) {
 
         if (response) {
             console.log(`Topic created successfully for post #${post.post_id}`);
+            // Store both message_thread_id and tg_id in the database
+            const { error } = await supabase
+                .from('referendums')
+                .update({
+                    thread_id: response.message_thread_id,
+                    tg_id: null // Will be set when message is sent
+                })
+                .eq('post_id', post.post_id);
+
+            if (error) {
+                console.error('Error updating thread_id in database:', error);
+            }
             return response.message_thread_id;
         } else {
             console.error(`Failed to create topic for post #${post.post_id}`);
@@ -245,7 +257,7 @@ async function sendMessage(post, threadId) {
 
         if (response) {
             console.log('Message sent successfully:', response.message_id);
-            // Update the tg_id in the database
+            // Update the tg_id (message ID) in the database
             const { error } = await supabase
                 .from('referendums')
                 .update({ tg_id: response.message_id })
@@ -302,8 +314,53 @@ async function editMessage(post, messageId) {
     }
 }
 
+/**
+ * Updates the name of a topic in the Telegram channel
+ * @param {Object} post - The proposal object
+ * @param {number} threadId - The thread ID of the topic
+ * @returns {Promise<boolean>} True if the topic name was updated successfully, false otherwise
+ */
+async function updateTopicName(post, threadId) {
+    try {
+        // Validate input
+        if (!post.title) {
+            console.error(`Cannot update topic name for post #${post.post_id}: No title available`);
+            return false;
+        }
+
+        if (!threadId) {
+            console.error(`Cannot update topic name for post #${post.post_id}: No thread ID provided`);
+            return false;
+        }
+
+        const newTopicName = `${titleEmoji[post.status]} ${post.post_id}: ${post.title}`;
+        console.log(`Attempting to update topic name for post #${post.post_id}:`);
+        console.log(`- Thread ID: ${threadId}`);
+        console.log(`- New name: ${newTopicName}`);
+
+        const response = await bot.editForumTopic(config.CHANNEL_ID, threadId, {
+            name: newTopicName
+        });
+
+        if (response) {
+            console.log(`Topic name updated successfully for post #${post.post_id}`);
+            return true;
+        } else {
+            console.error(`Failed to update topic name for post #${post.post_id}: No response from Telegram API`);
+            return false;
+        }
+    } catch (error) {
+        console.error(`Error updating topic name for post #${post.post_id}:`, error);
+        if (error.response) {
+            console.error('Telegram API response:', error.response.data);
+        }
+        return false;
+    }
+}
+
 module.exports = {
     createTopic,
     sendMessage,
-    editMessage
+    editMessage,
+    updateTopicName
 };

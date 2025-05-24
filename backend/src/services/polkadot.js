@@ -1,6 +1,6 @@
 const supabase = require('./database');
 const { fetchData } = require('./dataFetcher');
-const { createTopic, sendMessage, editMessage } = require('./telegramChannel');
+const { createTopic, sendMessage, editMessage, updateTopicName } = require('./telegramChannel');
 
 /**
  * Compares new and old referendum data to identify updated or new proposals
@@ -17,23 +17,39 @@ async function compareData(oldData, newData) {
 
         if (oldPost) {
             let isUpdated = false;
-            for (const key in newPost) {
-                if (['created_at', 'updated_at', 'tg_id'].includes(key)) continue;
+            let updateReason = '';
 
-                if (typeof newPost[key] === 'number' || typeof oldPost[key] === 'number') {
-                    if (Number(newPost[key]) !== Number(oldPost[key])) {
+            // Special handling for title to ensure we detect changes
+            if (newPost.title && (!oldPost.title || newPost.title !== oldPost.title)) {
+                isUpdated = true;
+                updateReason = `Title changed from "${oldPost.title || 'none'}" to "${newPost.title}"`;
+            }
+
+            // Check other fields if title hasn't changed
+            if (!isUpdated) {
+                for (const key in newPost) {
+                    if (['created_at', 'updated_at'].includes(key)) continue;
+
+                    if (typeof newPost[key] === 'number' || typeof oldPost[key] === 'number') {
+                        if (Number(newPost[key]) !== Number(oldPost[key])) {
+                            isUpdated = true;
+                            updateReason = `${key} changed from ${oldPost[key]} to ${newPost[key]}`;
+                            break;
+                        }
+                    } else if (newPost[key] !== oldPost[key]) {
                         isUpdated = true;
+                        updateReason = `${key} changed from "${oldPost[key]}" to "${newPost[key]}"`;
                         break;
                     }
-                } else if (newPost[key] !== oldPost[key]) {
-                    isUpdated = true;
-                    break;
                 }
             }
+
             if (isUpdated) {
+                console.log(`Post #${newPost.post_id} updated: ${updateReason}`);
                 updatedPosts.push(newPost);
             }
         } else {
+            console.log(`New post detected: #${newPost.post_id} - ${newPost.title || 'No title yet'}`);
             newPosts.push(newPost);
         }
     });
@@ -98,14 +114,19 @@ async function runPeriodically() {
             console.log(`Updating message for post #${post.post_id}`);
             const { data, error } = await supabase
                 .from('referendums')
-                .select('tg_id')
+                .select('tg_id, thread_id')
                 .eq('post_id', post.post_id)
                 .single();
 
             if (error) {
-                console.error(`Error fetching tg_id for post #${post.post_id}:`, error);
-            } else if (data && data.tg_id) {
-                await editMessage(post, data.tg_id);
+                console.error(`Error fetching IDs for post #${post.post_id}:`, error);
+            } else if (data) {
+                if (data.tg_id) {
+                    await editMessage(post, data.tg_id);
+                }
+                if (data.thread_id) {
+                    await updateTopicName(post, data.thread_id);
+                }
             }
         }
     }
