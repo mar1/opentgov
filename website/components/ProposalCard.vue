@@ -89,7 +89,7 @@ const props = defineProps({
 })
 
 // Computed property for Telegram discussion link
-const telegramLink = computed(() => `https://t.me/opentgov/${props.proposal.post_id}`)
+const telegramLink = computed(() => `https://t.me/opentgov/${props.proposal.thread_id}`)
 
 /**
  * Formats and sanitizes the proposal description
