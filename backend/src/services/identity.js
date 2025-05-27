@@ -15,7 +15,8 @@ async function queryIdentity(address) {
 
         if (identityOpt.isSome) {
             const identity = identityOpt.unwrap();
-            let info = identity[0].info.display.__internal__raw.toUtf8();
+
+            const info = identity.info.display.__internal__raw.toUtf8();
             if (info) {
                 console.log(`Display Name: ${info}`);
                 return info;
